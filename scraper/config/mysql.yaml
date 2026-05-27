@@ -1,0 +1,16 @@
+﻿# ============================================================
+# MySQL 数据库连接配置
+# ============================================================
+host: localhost
+port: 3306
+user: root
+password: "123456"
+database: recruitment
+charset: utf8mb4
+# 连接池配置
+pool:
+  min_cached: 2
+  max_cached: 10
+  max_connections: 20
+# 批量写入大小
+batch_size: 50

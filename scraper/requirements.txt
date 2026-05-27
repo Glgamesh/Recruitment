@@ -1,0 +1,25 @@
+﻿# ============================================================
+# 招聘数据采集系统 — Python 依赖
+# ============================================================
+# 安装: pip install -r requirements.txt
+# 额外: playwright install chromium
+
+# 浏览器自动化
+playwright>=1.45
+DrissionPage>=4.1
+
+# 数据库
+pymysql>=1.1
+DBUtils>=3.0
+
+# HTTP
+requests>=2.31
+
+# 配置
+PyYAML>=6.0
+
+# 数据处理 (预留)
+# pandas>=2.0
+# matplotlib>=3.7
+# jieba>=0.42
+# wordcloud>=1.9

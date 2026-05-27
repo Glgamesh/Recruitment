@@ -1,0 +1,40 @@
+# ============================================================
+# Git 忽略规则
+# ============================================================
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# 虚拟环境 (太大)
+venv/
+
+# 浏览器数据 (运行时生成)
+chrome_data_boss/
+
+# 采集数据 (JSON 文件，运行时生成，可选提交)
+data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时调试脚本
+_boss_login*.py
+_probe_*.py
+_debug_*.py
+_fetch_*.py
+_find_*.py
+_fix_*.py
+_test_*.py
+_temp.py
+_*.py
