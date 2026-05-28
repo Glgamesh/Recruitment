@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     experience VARCHAR(50) DEFAULT '' COMMENT '经验要求',
     education VARCHAR(20) DEFAULT '' COMMENT '学历要求',
     skills JSON DEFAULT NULL COMMENT '技能标签',
+    welfare JSON DEFAULT NULL COMMENT '福利待遇',
     job_description TEXT COMMENT '职位描述',
     industry VARCHAR(100) DEFAULT '' COMMENT '行业分类',
     company_size VARCHAR(50) DEFAULT '' COMMENT '公司规模',
@@ -119,3 +120,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

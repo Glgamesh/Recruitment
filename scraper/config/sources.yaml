@@ -1,0 +1,91 @@
+﻿# -*- coding: utf-8 -*-
+# ============================================================
+# 各招聘平台配置 — 城市码映射 + 平台元信息 + 速率控制
+# ============================================================
+
+sources:
+  boss:
+    display_name: "Boss直聘"
+    tool: drission
+    requires_login: true
+    enabled: true
+    city_codes:
+      北京: "101010100"
+      上海: "101020100"
+      广州: "101280100"
+      深圳: "101280600"
+      杭州: "101210100"
+      成都: "101270100"
+      南京: "101190100"
+      武汉: "101200100"
+      西安: "101110100"
+      苏州: "101190400"
+    max_per_query: 50
+    rate_limit: 4
+    request_delay: 0.5       # 请求间隔(秒)
+    max_retries: 2           # 失败重试次数
+    retry_backoff: 2.0       # 重试退避基数(秒)
+
+  job51:
+    display_name: "前程无忧"
+    tool: playwright
+    requires_login: false
+    enabled: true
+    city_codes:
+      北京: "010000"
+      上海: "020000"
+      广州: "030200"
+      深圳: "040000"
+      杭州: "080200"
+      成都: "090200"
+      南京: "070200"
+      武汉: "180200"
+      西安: "200200"
+      苏州: "070300"
+    max_per_query: 100
+    request_delay: 1.0
+    max_retries: 2
+    retry_backoff: 2.0
+
+  liepin:
+    display_name: "猎聘"
+    tool: playwright
+    requires_login: true
+    enabled: true
+    city_codes:
+      北京: "010"
+      上海: "020"
+      广州: "050020"
+      深圳: "050090"
+      杭州: "070020"
+      成都: "280020"
+      南京: "060020"
+      武汉: "170020"
+      西安: "270020"
+      苏州: "250020"
+    max_per_query: 100
+    request_delay: 1.5
+    max_retries: 2
+    retry_backoff: 3.0
+
+  zhaopin:
+    display_name: "智联招聘"
+    tool: drission
+    requires_login: false
+    enabled: true
+    city_codes:
+      北京: "530"
+      上海: "538"
+      广州: "763"
+      深圳: "765"
+      杭州: "653"
+      成都: "801"
+      南京: "635"
+      武汉: "736"
+      西安: "854"
+      苏州: "639"
+    max_per_query: 100
+    request_delay: 1.5
+    hover_delay: 0.8         # 悬停等待(秒)
+    max_retries: 2
+    retry_backoff: 2.0

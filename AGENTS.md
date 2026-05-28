@@ -10,7 +10,7 @@
 
 | 阶段 | 状态 | 目录 |
 |------|:--:|------|
-| 数据采集 | ✅ 完成 | `scraper/` |
+| 数据采集 | ✅ 完成(模块化v2) | `scraper/` |
 | 数据清洗 | ⬜ 待开发 | — |
 | 数据分析 | ⬜ 待开发 | — |
 | 后端 API | ⬜ 待开发 | — |
@@ -24,6 +24,7 @@
 |------|------|------|
 | 语言 | **Python 3.14** | 全项目统一语言 |
 | 采集-浏览器 | Playwright / DrissionPage | 过反爬，DrissionPage 专攻 Boss直聘 |
+| 采集-浏览器 | Playwright / DrissionPage | 过反爬，DrissionPage 用于 Boss/智联 |
 | 采集-HTTP | requests | API 直调 |
 | 数据库 | **MySQL 8.0** | 结构化存储，已运行在 localhost:3306 |
 | 配置 | YAML | 关键词/城市/数据库连接 |
@@ -64,6 +65,7 @@ CREATE TABLE jobs (
     experience VARCHAR(50),
     education VARCHAR(20),
     skills JSON,                          -- 技能标签数组
+    welfare JSON DEFAULT NULL,              -- 福利待遇数组（v2新增）
     job_description TEXT,                 -- 职位描述全文
     industry VARCHAR(100),
     company_size VARCHAR(50),
@@ -85,7 +87,8 @@ CREATE TABLE jobs (
 | `salary_month` | 默认12，如 `14薪` 则为14 |
 | `experience` | 归一化值: 应届生/1年以内/1-3年/3-5年/5-10年/10年以上/不限 |
 | `education` | 归一化值: 博士/硕士/本科/大专/高中/中专/不限 |
-| `skills` | JSON 数组，如 `["Python","MySQL","Docker"]` |
+| `skills` | JSON 数组，如 `["Python","MySQL","Docker"]`，不含福利词 |
+| `welfare` | JSON 数组，如 `["五险一金","周末双休"]`（v2新增）|
 | `city` | 不带"市"后缀，如 "北京" 而非 "北京市" |
 | `source` | 固定值: `boss` / `job51` / `zhaopin` / `liepin` |
 | 去重 | `(source, source_job_id)` 联合唯一，upsert 自动更新 |
@@ -94,7 +97,7 @@ CREATE TABLE jobs (
 
 ## 四、数据采集子系统 (`scraper/`)
 
-详见 `scraper/AGENTS.md`。关键信息摘要：
+详见 `scraper/AGENTS.md`（v2 模块化重构）。关键信息摘要：
 
 | 站点 | 脚本 | 工具 | 反爬难度 |
 |------|------|------|:--:|

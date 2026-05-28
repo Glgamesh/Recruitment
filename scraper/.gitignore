@@ -11,6 +11,7 @@ venv/
 
 # 浏览器数据
 chrome_data_boss/
+chrome_data_zhaopin/
 
 # 采集数据 (可选，根据需要取消注释)
 # data/
