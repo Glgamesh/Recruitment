@@ -1,4 +1,4 @@
-# AGENTS.md — 招聘网站数据统计系统
+﻿# AGENTS.md — 招聘网站数据统计系统
 
 > 项目根目录开发指南，涵盖全流程技术栈、数据约定、后续开发关键信息。
 
@@ -23,7 +23,6 @@
 | 层级 | 选型 | 原因 |
 |------|------|------|
 | 语言 | **Python 3.14** | 全项目统一语言 |
-| 采集-浏览器 | Playwright / DrissionPage | 过反爬，DrissionPage 专攻 Boss直聘 |
 | 采集-浏览器 | Playwright / DrissionPage | 过反爬，DrissionPage 用于 Boss/智联 |
 | 采集-HTTP | requests | API 直调 |
 | 数据库 | **MySQL 8.0** | 结构化存储，已运行在 localhost:3306 |
@@ -104,7 +103,7 @@ CREATE TABLE jobs (
 | Boss直聘 | `collect_boss.py` | DrissionPage | ⭐⭐⭐⭐⭐ |
 | 前程无忧 | `collect_51job.py` | Playwright | ⭐⭐⭐⭐ |
 | 猎聘 | `collect_liepin.py` | Playwright | ⭐⭐⭐ |
-| 智联招聘 | `collect_zhaopin.py` | Playwright | ⭐⭐ |
+| 智联招聘 | `collect_zhaopin.py` | DrissionPage | ⭐⭐⭐ |
 
 运行依赖 `scraper/venv/`，安装：
 
