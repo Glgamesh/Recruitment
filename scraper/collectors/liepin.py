@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from playwright.sync_api import sync_playwright
+import requests
 
 from core.base import BaseScraper
 from core.registry import register_scraper
@@ -195,8 +196,7 @@ class LiepinScraper(BaseScraper):
 
             for kw in keywords:
                 for ct_name in cities:
-                    if job_count >= max_jobs:
-                        break
+                    combo_count = 0
                     city_code = self.map_city(ct_name)
                     if not city_code:
                         continue
@@ -226,7 +226,7 @@ class LiepinScraper(BaseScraper):
                     logger.info("  第1页: %d条 | 共%d条 %d页", len(cards), total_count, total_pages)
 
                     for card in cards:
-                        if job_count >= max_jobs:
+                        if combo_count >= max_jobs:
                             break
                         j = card.get("job", {})
                         c = card.get("comp", {})
@@ -235,11 +235,12 @@ class LiepinScraper(BaseScraper):
                             continue
                         seen.add(jid)
                         all_rows.append(self._card_to_row(j, c))
+                        combo_count += 1
                         job_count += 1
 
                     # 翻页
                     for pg in range(1, min(total_pages, 15)):
-                        if job_count >= max_jobs or not ckId:
+                        if combo_count >= max_jobs or not ckId:
                             break
                         time.sleep(0.8)
                         try:
@@ -257,7 +258,7 @@ class LiepinScraper(BaseScraper):
                         cards2 = next_data.get("data", {}).get("data", {}).get("jobCardList", [])
                         logger.info("  第%d页: %d条", pg + 1, len(cards2))
                         for card in cards2:
-                            if job_count >= max_jobs:
+                            if combo_count >= max_jobs:
                                 break
                             j = card.get("job", {})
                             c = card.get("comp", {})
@@ -266,12 +267,9 @@ class LiepinScraper(BaseScraper):
                                 continue
                             seen.add(jid)
                             all_rows.append(self._card_to_row(j, c))
+                            combo_count += 1
                             job_count += 1
 
-                    if job_count >= max_jobs:
-                        break
-                if job_count >= max_jobs:
-                    break
 
             # 详情抓取
             if fetch_details and all_rows:
@@ -281,21 +279,60 @@ class LiepinScraper(BaseScraper):
                     "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
                 )
 
+                # 详情抓取（requests 直取 H5 页面，无需登录）
+                session = requests.Session()
+                h5_headers = {
+                    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148",
+                    "Accept-Language": "zh-CN,zh;q=0.9",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Referer": "https://m.liepin.com/",
+                }
+                has_desc_n = 0
                 for i, row in enumerate(all_rows):
-                    detail_url = row.get("_detail_url", "")
-                    if not detail_url:
+                    pc_url = row.get("url", "")
+                    if not pc_url:
                         continue
-                    desc, skills = self._fetch_detail(detail_page, detail_url)
-                    if desc:
+                    # 从 PC URL 派生 H5 URL：www.liepin.com → m.liepin.com
+                    h5_url = pc_url.replace("www.liepin.com", "m.liepin.com")
+                    desc = ""
+                    try:
+                        resp = session.get(h5_url, headers=h5_headers, timeout=15)
+                        if resp.status_code == 200 and len(resp.text) > 500:
+                            text = resp.text
+                            start = text.find("职位介绍")
+                            if start >= 0:
+                                end_markers = ["公司信息", "工作地点", "猜你喜欢"]
+                                end = len(text)
+                                for m in end_markers:
+                                    idx = text.find(m, start + 4)
+                                    if idx > start and idx < end:
+                                        end = idx
+                                segment = text[start:end]
+                                desc = re.sub(r"<[^>]+>", "", segment).strip()
+                            if not desc or len(desc) < 20:
+                                clean = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.DOTALL)
+                                clean = re.sub(r"<style[^>]*>.*?</style>", "", clean, flags=re.DOTALL)
+                                clean = re.sub(r"<[^>]+>", "", clean)
+                                clean = re.sub(r"\s+", " ", clean).strip()
+                                si = clean.find("职位介绍")
+                                if si >= 0:
+                                    em = ["公司信息", "工作地点", "猜你喜欢"]
+                                    ei = len(clean)
+                                    for m in em:
+                                        idx = clean.find(m, si + 4)
+                                        if idx > si and idx < ei:
+                                            ei = idx
+                                    desc = clean[si:ei].strip()
+                    except Exception as e:
+                        logger.debug("  H5请求失败 jid=%s: %s", row.get("source_job_id", ""), e)
+                    if desc and len(desc) > 20:
                         row["job_description"] = desc
-                    if skills:
-                        existing = json.loads(row["skills"]) if row["skills"] else []
-                        merged = list(dict.fromkeys(existing + skills))
-                        row["skills"] = json.dumps(merged, ensure_ascii=False)
+                        has_desc_n += 1
+                    time.sleep(0.5)
                     if (i + 1) % 5 == 0 or i == len(all_rows) - 1:
-                        has_desc_n = sum(1 for r in all_rows if r["job_description"])
                         logger.info("  详情: %d/%d | 有描述: %d", i + 1, len(all_rows), has_desc_n)
-                    time.sleep(1.0)
+                logger.info("  详情完成: %d/%d", has_desc_n, len(all_rows))
+                session.close()
 
                 detail_page.close()
 
